@@ -24,7 +24,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
 .g1{width:220px;height:220px;background:#ff1f78;top:-100px;left:-80px;animation:drift 9s ease-in-out infinite alternate}
 .g2{width:260px;height:260px;background:#6d35ff;right:-100px;bottom:-100px;animation:drift 11s ease-in-out infinite alternate-reverse}
 
-/* --- STEP 1: LINK GENERATOR (For You) --- */
+/* --- STEP 1: LINK GENERATOR --- */
 .generator-screen {
   position: relative;
   z-index: 20;
@@ -57,7 +57,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
   gap: 12px;
 }
 
-.input-box input {
+.input-box input, .input-box textarea {
   width: 100%;
   padding: 12px 18px;
   border-radius: 20px;
@@ -67,9 +67,22 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
   font-size: 14px;
   text-align: center;
   outline: none;
+  font-family: inherit;
 }
 
-.input-box input:focus {
+.input-box textarea {
+  height: 90px;
+  resize: none;
+  text-align: left;
+  border-radius: 16px;
+  line-height: 1.4;
+}
+
+.input-box textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input-box input:focus, .input-box textarea:focus {
   border-color: #ff6da7;
 }
 
@@ -271,7 +284,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 #yesBtn:active{transform:scale(.95)}
 #noBtn{color:#351526;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.24);position:relative;z-index:3;will-change:transform}
 
-/* --- INTERACTIVE REACTION BAR --- */
+/* --- REACTION BAR --- */
 .reaction-bar {
   display: flex;
   justify-content: center;
@@ -350,14 +363,15 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 <body>
 <div class="aurora"></div><div class="glow g1"></div><div class="glow g2"></div>
 
-<!-- STEP 1: LINK GENERATOR (Only visible to Creator) -->
+<!-- STEP 1: LINK GENERATOR -->
 <div class="generator-screen" id="generatorScreen">
   <h2>Create Love Letter Link ✨</h2>
-  <p>Enter the details and copy the link to send</p>
+  <p>Enter details & customize your message</p>
   <div class="input-box">
     <input type="text" id="toInput" placeholder="To: Recipient Name">
     <input type="text" id="fromInput" placeholder="From: Your Name">
     <input type="text" id="waInput" placeholder="WhatsApp Number">
+    <textarea id="customMsgInput" placeholder="Write a message for her/him or leave empty for default message..."></textarea>
     <button class="gen-btn" onclick="generateLink()">Generate Link 🔗</button>
   </div>
   
@@ -367,9 +381,8 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
   </div>
 </div>
 
-<!-- STEP 2: ENVELOPE & LETTER CONTAINER (Directly shown to Recipient) -->
+<!-- STEP 2: ENVELOPE & LETTER CONTAINER -->
 <div class="envelope-container" id="envelopeContainer">
-  <!-- Envelope Area -->
   <div class="envelope-wrapper" id="envelopeWrapper">
     <div class="envelope">
       <div class="lid"></div>
@@ -380,7 +393,6 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
   </div>
   <div class="click-hint" id="clickHint">Click to open your letter ✨</div>
 
-  <!-- Letter Content Card -->
   <main class="card" id="mainCard">
    <div class="content">
     <div class="topline">A tiny secret for Youuuuuuu</div>
@@ -395,7 +407,6 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
      <button id="noBtn">Not today 😌</button>
     </div>
 
-    <!-- Interactive Reaction Bar -->
     <div class="reaction-bar" id="reactionBar">
       <button class="react-btn" onclick="sendReaction('🥰')">🥰</button>
       <button class="react-btn" onclick="sendReaction('💖')">💖</button>
@@ -403,7 +414,6 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
       <button class="react-btn" onclick="sendReaction('✨')">✨</button>
       <button class="react-btn" onclick="sendReaction('💋')">💋</button>
     </div>
-
    </div>
   </main>
 </div>
@@ -428,22 +438,25 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 let userName = "Special Someone";
 let senderName = "Your Name";
 let myWhatsAppNumber = "";
+let defaultText = "Out of all the people in this world\nmy heart somehow found its home in you 🫠\nI don't want a perfect life—\nI just want a lifetime filled with beautiful moments with you ☺️";
+let textToType = defaultText;
 
 const generatorScreen = document.getElementById("generatorScreen");
 const envelopeContainer = document.getElementById("envelopeContainer");
 const greetingTitle = document.getElementById("greetingTitle");
 const envelopeSender = document.getElementById("envelopeSender");
 
-// URL parameter check
 const urlParams = new URLSearchParams(window.location.search);
 const paramTo = urlParams.get('to');
 const paramFrom = urlParams.get('from');
 const paramWa = urlParams.get('wa');
+const paramMsg = urlParams.get('msg');
 
 if (paramTo && paramWa) {
   userName = paramTo;
   if (paramFrom) senderName = paramFrom;
   myWhatsAppNumber = paramWa;
+  if (paramMsg) textToType = decodeURIComponent(paramMsg);
 
   generatorScreen.style.display = "none";
   greetingTitle.textContent = `Hey ${userName}`;
@@ -457,19 +470,21 @@ function generateLink() {
   const toVal = encodeURIComponent(document.getElementById("toInput").value.trim());
   const fromVal = encodeURIComponent(document.getElementById("fromInput").value.trim());
   const waVal = encodeURIComponent(document.getElementById("waInput").value.trim());
+  
+  const rawMsg = document.getElementById("customMsgInput").value.trim();
+  const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
 
   if (!toVal || !waVal) {
     alert("Please fill 'To' name and WhatsApp number!");
     return;
   }
 
-  // Base URL Fix for Local (file://) and Web Server
   let baseUrl = window.location.href.split('?')[0];
   if (window.location.protocol === 'file:') {
     alert("Notice: Direct file open kora. Web-e upload korle exact link paben.");
   }
 
-  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}`;
+  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
 
   document.getElementById("generatedUrl").value = shareableUrl;
   document.getElementById("linkResult").style.display = "flex";
@@ -477,8 +492,6 @@ function generateLink() {
 
 function copyGeneratedLink() {
   const linkInput = document.getElementById("generatedUrl");
-  
-  // Mobile device text selection
   linkInput.focus();
   linkInput.select();
   linkInput.setSelectionRange(0, 99999);
@@ -495,8 +508,6 @@ function copyGeneratedLink() {
     alert("Link copied! Send this link to your recipient ❤️");
   }
 }
-
-const textToType = "Out of all the people in this world\nmy heart somehow found its home in you 🫠\nI don't want a perfect life—\nI just want a lifetime filled with beautiful moments with you ☺️";
 
 const typedTextElement = document.getElementById("typedText");
 const cursorElement = document.getElementById("cursor");
@@ -535,9 +546,7 @@ envelopeWrapper.addEventListener("click", function() {
     setTimeout(() => {
       envelopeWrapper.style.display = "none";
       mainCard.style.display = "block";
-      
       void mainCard.offsetWidth; 
-      
       mainCard.classList.add("unfold-show");
       setTimeout(typeWriter, 700);
     }, 400);
