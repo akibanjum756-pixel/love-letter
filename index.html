@@ -48,24 +48,6 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
 .link-result { display: none; margin-top: 15px; flex-direction: column; gap: 8px; }
 .copy-btn { background: #25D366; color: #fff; padding: 10px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; }
 
-/* Image Upload Input Style */
-.file-upload-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: 20px;
-  border: 1px dashed rgba(255,255,255,.4);
-  background: rgba(0,0,0,.25);
-  color: #ffc7da;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.file-upload-label:hover { border-color: #ff6da7; background: rgba(255,255,255,.1); }
-#imgInput { display: none; }
-
 /* WA Country Code Input Style */
 .wa-container { display: flex; gap: 8px; width: 100%; }
 .wa-container select { width: 42%; padding: 12px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.6); color: #fff; font-size: 13px; outline: none; font-family: inherit; cursor: pointer; }
@@ -221,10 +203,8 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
     <input type="text" id="toInput" placeholder="To: Recipient Name">
     <input type="text" id="fromInput" placeholder="From: Your Name">
     
-    <label class="file-upload-label" for="imgInput">
-      <span>🖼️ Add Photo (Optional)</span>
-      <input type="file" id="imgInput" accept="image/*" onchange="handleImageUpload(event)">
-    </label>
+    <!-- Image URL Input -->
+    <input type="url" id="imgUrlInput" placeholder="Image Direct Link (e.g. https://...) 🖼️">
     
     <div class="wa-container">
       <select id="countryCode">
@@ -349,7 +329,6 @@ let senderName = "Your Name";
 let myWhatsAppNumber = "";
 let defaultText = "Out of all the people in this world\nmy heart somehow found its home in you 🫠\nI don't want a perfect life—\nI just want a lifetime filled with beautiful moments with you ☺️";
 let textToType = defaultText;
-let uploadedImgData = "";
 
 const generatorScreen = document.getElementById("generatorScreen");
 const envelopeContainer = document.getElementById("envelopeContainer");
@@ -389,45 +368,6 @@ if (paramTo && paramWa) {
   generatorScreen.style.display = "block";
 }
 
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement("canvas");
-      let width = img.width;
-      let height = img.height;
-      
-      const maxDim = 300;
-      if (width > height) {
-        if (width > maxDim) {
-          height = Math.round((height *= maxDim / width));
-          width = maxDim;
-        }
-      } else {
-        if (height > maxDim) {
-          width = Math.round((width *= maxDim / height));
-          height = maxDim;
-        }
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      uploadedImgData = canvas.toDataURL("image/jpeg", 0.6);
-      const label = document.querySelector(".file-upload-label span");
-      if (label) label.textContent = "✅ Photo Selected!";
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
 async function generateLink() {
   const userKey = document.getElementById("keyInput").value.trim();
   if (!userKey) {
@@ -459,6 +399,7 @@ async function generateLink() {
 
   const toText = document.getElementById("toInput").value.trim();
   const fromText = document.getElementById("fromInput").value.trim();
+  const imgUrl = document.getElementById("imgUrlInput").value.trim();
   
   const codeSelect = document.getElementById("countryCode").value;
   let rawWa = document.getElementById("waInput").value.trim().replace(/[^0-9]/g, '');
@@ -482,7 +423,7 @@ async function generateLink() {
   if (fromText) params.set("from", fromText);
   params.set("wa", waText);
   if (rawMsg && rawMsg !== defaultText) params.set("msg", rawMsg);
-  if (uploadedImgData) params.set("img", uploadedImgData);
+  if (imgUrl) params.set("img", imgUrl);
 
   const baseUrl = window.location.href.split("?")[0].split("#")[0];
   const shareableUrl = `${baseUrl}?${params.toString()}`;
