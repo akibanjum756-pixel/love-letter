@@ -322,7 +322,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 .overlay.show{display:grid;animation:fade .5s ease}
 .success{width:min(500px,100%);padding:28px 20px 24px;text-align:center;border-radius:28px;border:1px solid rgba(255,255,255,.17);background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.045));box-shadow:0 25px 80px rgba(0,0,0,.65);animation:pop .7s cubic-bezier(.2,.8,.2,1)}
 .success .orbit{width:90px;height:90px;margin-bottom:15px}
-.success h2{font-size:clamp(36px,8.5vw,56px);line-height:1;margin-bottom:12px;background:linear-gradient(90deg,#fff,#ff9fc4,#fff);background-size:220% auto;-webkit-background-clip:text;color:transparent;animation:shine 3s linear infinite;min-height:56px}
+.success h2{font-size:clamp(32px,7.5vw,50px);line-height:1;margin-bottom:12px;background:linear-gradient(90deg,#fff,#ff9fc4,#fff);background-size:220% auto;-webkit-background-clip:text;color:transparent;animation:shine 3s linear infinite;min-height:56px}
 .success p{font-size:16px;line-height:1.6;color:#ffe3ed;min-height:50px;white-space:pre-line}
 .signature{margin-top:16px;font-size:11px;color:rgba(255,220,235,.5);opacity:0;transition:opacity 1s ease}
 .signature.show{opacity:1}
@@ -423,8 +423,8 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 <section id="successOverlay" class="overlay" aria-hidden="true">
  <div class="success">
   <div class="orbit"><div class="heart">💖</div></div>
-  <h2 id="successHeading"><span id="typedHeading"></span><span class="cursor" id="cursorH"></span></h2>
-  <p><span id="typedSubtext"></span><span class="cursor" id="cursorP" style="display:none"></span></p>
+  <h2 id="successHeading">I Knew It! ❤️</h2>
+  <p><span id="typedSubtext"></span><span class="cursor" id="cursorP"></span></p>
 
   <div class="custom-msg-box" id="msgBox">
     <textarea id="userMessage" placeholder="Want to say something to me? 💭"></textarea>
@@ -571,18 +571,41 @@ yesBtn.addEventListener("click", () => {
   confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   successOverlay.classList.add("show");
   
-  const typedHeading = document.getElementById("typedHeading");
   const typedSubtext = document.getElementById("typedSubtext");
+  const cursorP = document.getElementById("cursorP");
   const msgBox = document.getElementById("msgBox");
   const signatureText = document.getElementById("signatureText");
 
-  typedHeading.textContent = "Yay! 🎉❤️";
-  typedSubtext.textContent = `You made ${senderName}'s day so special!`;
-  msgBox.classList.add("show");
-  signatureText.classList.add("show");
+  const successMessage = "Our Forever Begins Today 🥰\nI love you today tomorrow and forever ♾️✨";
+  let j = 0;
+  
+  function typeSuccess() {
+    if (j < successMessage.length) {
+      typedSubtext.textContent += successMessage.charAt(j);
+      j++;
+      setTimeout(typeSuccess, 40);
+    } else {
+      cursorP.style.display = "none";
+      msgBox.classList.add("show");
+      signatureText.classList.add("show");
+    }
+  }
+  typeSuccess();
 });
 
-/* NO BUTTON EVADE */
+/* NO BUTTON EVADE WITH DYNAMIC TEXT */
+const noPhrases = [
+  "Not today 😌",
+  "Are you sure? 🥺",
+  "Think again! 💭",
+  "Really? 💔",
+  "Reconsider? 🌸",
+  "Give it a try! ✨",
+  "Wrong button! 😜",
+  "Nice try! 🙈"
+];
+let phraseIndex = 0;
+
 noBtn.addEventListener("mouseover", moveNoBtn);
 noBtn.addEventListener("touchstart", moveNoBtn);
 
@@ -590,6 +613,9 @@ function moveNoBtn() {
   const x = Math.random() * (window.innerWidth - 120) - (window.innerWidth / 2 - 60);
   const y = Math.random() * (window.innerHeight - 60) - (window.innerHeight / 2 - 30);
   noBtn.style.transform = `translate(${x}px, ${y}px)`;
+  
+  phraseIndex = (phraseIndex + 1) % noPhrases.length;
+  noBtn.textContent = noPhrases[phraseIndex];
 }
 
 /* WHATSAPP MESSAGE */
