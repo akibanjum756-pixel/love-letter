@@ -435,6 +435,19 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
  </div>
 </section>
 
+<!-- STEP 4: KEY VERIFICATION OVERLAY -->
+<section id="lockOverlay" class="overlay" aria-hidden="true">
+  <div class="success">
+   <div class="orbit" style="width:70px;height:70px;margin:bottom:10px;"><div class="heart" style="font-size:30px;">🔒</div></div>
+   <h2 style="font-size: clamp(24px, 6vw, 32px); min-height: auto;">Secret Letter!</h2>
+   <p style="min-height: auto; margin-bottom: 15px;">Enter the access key to open</p>
+   <div class="custom-msg-box show" style="margin-top: 0;">
+     <input type="text" id="checkKeyInput" placeholder="Enter Key 🔑" style="width:100%; max-width:250px; padding:12px; border-radius:16px; border:1px solid rgba(255,255,255,.2); background:rgba(0,0,0,.3); color:#fff; text-align:center; margin-bottom:10px; font-family:inherit; outline:none;">
+     <button class="send-btn" id="verifyKeyBtn">Unlock 🔓</button>
+   </div>
+  </div>
+ </section>
+
 <script>
 let userName = "Special Someone";
 let senderName = "Your Name";
@@ -455,6 +468,7 @@ const paramTo = urlParams.get('to');
 const paramFrom = urlParams.get('from');
 const paramWa = urlParams.get('wa');
 const paramMsg = urlParams.get('msg');
+const paramKey = urlParams.get('key'); // Get Key from URL
 
 if (paramTo && paramWa) {
   userName = paramTo;
@@ -476,24 +490,26 @@ async function generateLink() {
   const fromVal = encodeURIComponent(document.getElementById("fromInput").value.trim());
   const waVal = encodeURIComponent(document.getElementById("waInput").value.trim());
   const rawMsg = document.getElementById("customMsgInput").value.trim();
-  const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
-
+  
   if (!userKey) {
     alert("Please enter a Secret Access Key!");
     return;
   }
-
   if (!toVal || !waVal) {
     alert("Please fill 'To' name and WhatsApp number!");
     return;
   }
+
+  const keyVal = encodeURIComponent(userKey);
+  const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
 
   const genBtn = document.getElementById("genBtn");
   genBtn.disabled = true;
   genBtn.textContent = "Generating Link... ⏳";
 
   let baseUrl = window.location.href.split('?')[0];
-  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
+  // Add Key to the shareable URL
+  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}&key=${keyVal}`;
 
   document.getElementById("generatedUrl").value = shareableUrl;
   document.getElementById("linkResult").style.display = "flex";
@@ -520,12 +536,35 @@ function copyGeneratedLink() {
   }
 }
 
-/* ENVELOPE OPEN LOGIC */
+/* ENVELOPE OPEN LOGIC WITH KEY CHECK */
 let envelopeOpened = false;
+
 envelopeWrapper.addEventListener("click", () => {
   if (envelopeOpened) return;
-  envelopeOpened = true;
+  
+  if (paramKey) {
+    // Show unlock modal if key exists
+    document.getElementById("lockOverlay").classList.add("show");
+  } else {
+    // Open immediately if no key
+    openEnvelope();
+  }
+});
 
+/* VERIFY KEY BUTTON */
+document.getElementById("verifyKeyBtn").addEventListener("click", () => {
+  const enteredKey = document.getElementById("checkKeyInput").value.trim();
+  if (enteredKey === paramKey) {
+    document.getElementById("lockOverlay").classList.remove("show");
+    openEnvelope();
+  } else {
+    alert("Incorrect Key! ❌ Try again.");
+    document.getElementById("checkKeyInput").value = "";
+  }
+});
+
+function openEnvelope() {
+  envelopeOpened = true;
   envelopeWrapper.classList.add("open-flap");
   clickHint.style.opacity = "0";
 
@@ -538,7 +577,7 @@ envelopeWrapper.addEventListener("click", () => {
       startTypewriter();
     }, 600);
   }, 800);
-});
+}
 
 /* TYPEWRITER ANIMATION */
 function startTypewriter() {
@@ -616,7 +655,6 @@ function moveNoBtn() {
   const btnWidth = noBtn.offsetWidth || 100;
   const btnHeight = noBtn.offsetHeight || 40;
   
-  // Safe area limits inside viewport
   const maxTranslateX = (window.innerWidth / 2) - btnWidth;
   const maxTranslateY = (window.innerHeight / 2) - btnHeight;
 
