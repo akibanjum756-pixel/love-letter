@@ -1,137 +1,369 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#07030d">
 <title>A Little Secret ❤️</title>
+<!-- Confetti Library -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--pink:#ff4f9a;--hot:#ff176d;--purple:#7c3cff}
-html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+:root{--pink:#ff4f9a;--hot:#ff176d;--purple:#7c3cff;--glass:rgba(255,255,255,.095)}
+html,body{width:100%;min-height:100%;font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif}
 body{
  min-height:100svh;display:grid;place-items:center;overflow:hidden;padding:12px;color:#fff;
- background:#0a0312;
+ background:
+ radial-gradient(circle at 10% 10%,rgba(255,48,133,.25),transparent 28%),
+ radial-gradient(circle at 90% 90%,rgba(124,60,255,.22),transparent 30%),
+ linear-gradient(145deg,#050208,#200014 45%,#080311);
 }
-.card, .envelope-wrapper, .generator-screen {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:radial-gradient(#fff .6px,transparent .6px);background-size:34px 34px}
+.aurora{position:fixed;inset:-25%;pointer-events:none;filter:blur(70px);opacity:.18;background:conic-gradient(from 0deg,#ff277d,#742dff,#ff277d);animation:aurora 18s linear infinite}
+.glow{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.24}
+.g1{width:220px;height:220px;background:#ff1f78;top:-100px;left:-80px;animation:drift 9s ease-in-out infinite alternate}
+.g2{width:260px;height:260px;background:#6d35ff;right:-100px;bottom:-100px;animation:drift 11s ease-in-out infinite alternate-reverse}
 
+/* --- STEP 1: LINK GENERATOR --- */
 .generator-screen {
   position: relative;
   z-index: 20;
   width: min(420px, 100%);
-  padding: 24px 18px;
+  padding: 30px 20px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 20px;
-  background: rgba(20, 10, 30, 0.85);
-  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 28px;
+  background: linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 20px 60px rgba(0,0,0,.65);
 }
-.generator-screen h2 { font-size: 20px; margin-bottom: 8px; color: #ffb8d1; }
-.generator-screen p { font-size: 13px; color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; }
 
-.input-box { display: flex; flex-direction: column; gap: 10px; }
-.input-box input, .input-box textarea {
-  width: 100%; padding: 12px 14px; border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.5);
-  color: #fff; font-size: 14px; outline: none; text-align: center;
+.generator-screen h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #ffb8d1;
 }
-.input-box textarea { height: 80px; resize: none; text-align: left; }
+
+.generator-screen p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+}
+
+.input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-box input, .input-box textarea {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.4);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+}
+
+.input-box textarea {
+  height: 90px;
+  resize: none;
+  text-align: left;
+  border-radius: 16px;
+  line-height: 1.4;
+}
+
+.input-box textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input-box input:focus, .input-box textarea:focus {
+  border-color: #ff6da7;
+}
 
 .gen-btn {
   background: linear-gradient(135deg,#ff65a7,#ff176d);
-  color: #fff; font-size: 15px; font-weight: 700; padding: 12px;
-  border-radius: 12px; border: 0; cursor: pointer; margin-top: 5px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 30px;
+  border-radius: 20px;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255,23,109,.4);
+  margin-top: 5px;
 }
-.link-result { display: none; margin-top: 12px; flex-direction: column; gap: 8px; }
-.copy-btn { background: #25D366; color: #fff; padding: 10px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
 
-/* ENVELOPE */
-.envelope-container {
-  position: relative; width: min(680px, 100%);
-  display: none; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity 0.5s ease;
+.link-result {
+  display: none;
+  margin-top: 15px;
+  flex-direction: column;
+  gap: 8px;
 }
-.envelope-container.show { display: flex; opacity: 1; }
+
+.copy-btn {
+  background: #25D366;
+  color: #fff;
+  padding: 10px;
+  border-radius: 15px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* --- ENVELOPE CONTAINER --- */
+.envelope-container {
+  position: relative;
+  width: min(680px, 100%);
+  min-height: 420px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.envelope-container.show {
+  display: flex;
+  opacity: 1;
+}
 
 .envelope-wrapper {
-  position: relative; width: 280px; height: 180px;
-  cursor: pointer; z-index: 10; transition: transform 0.5s ease, opacity 0.5s ease;
+  position: relative;
+  width: 320px;
+  height: 220px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+  will-change: transform, opacity;
 }
-.envelope { position: absolute; inset: 0; background: #ff3377; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+
+.envelope {
+  position: absolute;
+  inset: 0;
+  background: #ff3377;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  transform-style: preserve-3d;
+}
+
 .envelope .lid {
-  position: absolute; top: 0; left: 0; width: 0; height: 0;
-  border-left: 140px solid transparent; border-right: 140px solid transparent;
-  border-top: 95px solid #ff176d; transform-origin: top center;
-  transition: transform 0.5s ease; z-index: 4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 160px solid transparent;
+  border-right: 160px solid transparent;
+  border-top: 120px solid #ff176d;
+  transform-origin: top center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 4;
+  will-change: transform;
 }
+
 .envelope .pocket {
-  position: absolute; inset: 0; background: #e6005c;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ff4f9a, #e6005c);
   clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
-  border-radius: 0 0 12px 12px; z-index: 3;
+  border-radius: 0 0 16px 16px;
+  z-index: 3;
 }
-.envelope .heart-seal { position: absolute; top: 80px; left: 50%; transform: translate(-50%, -50%); font-size: 28px; z-index: 5; }
+
+.envelope .heart-seal {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  z-index: 5;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+}
+
 .envelope-sender {
-  position: absolute; bottom: 8px; right: 12px; z-index: 6;
-  font-size: 11px; color: #fff; background: rgba(0, 0, 0, 0.4);
-  padding: 3px 8px; border-radius: 8px;
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  z-index: 6;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.5px;
 }
-.click-hint { margin-top: 18px; font-size: 14px; color: #ffb8d1; }
 
-.envelope-wrapper.open-flap .lid { transform: rotateX(180deg); }
-.envelope-wrapper.fade-out { opacity: 0; transform: translateY(30px); pointer-events: none; }
-
-/* CARD */
-.card {
-  position: relative; z-index: 15; width: min(680px, 100%);
-  padding: 24px 16px; text-align: center; border-radius: 20px;
-  background: rgba(20, 10, 30, 0.9); border: 1px solid rgba(255,255,255,.15);
-  box-shadow: 0 15px 35px rgba(0,0,0,.6); opacity: 0;
-  transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease;
-  display: none;
+.click-hint {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #ffb8d1;
+  letter-spacing: 1px;
+  animation: pulse 1.5s infinite ease-in-out;
+  transition: opacity 0.4s ease;
 }
-.card.unfold-show { display: block; opacity: 1; transform: translateY(0); }
 
-.topline { font-size: 10px; letter-spacing: 1px; color: #ffb8d1; margin-bottom: 8px; text-transform: uppercase; }
-.heart { font-size: 42px; margin-bottom: 8px; }
-.badge { display: inline-block; padding: 4px 10px; border-radius: 12px; background: rgba(255,85,150,.15); font-size: 10px; color: #ffc7da; font-weight: bold; }
-h1 { font-size: clamp(28px, 6vw, 42px); margin: 10px 0; color: #fff; }
-.message { max-width: 480px; margin: auto; color: #f9dce8; font-size: 14px; line-height: 1.5; min-height: 70px; white-space: pre-line; }
-.cursor { display: inline-block; width: 2px; height: 14px; background-color: #ff6da7; margin-left: 2px; }
+.envelope-wrapper.open-flap .lid {
+  transform: rotateX(180deg);
+}
 
-.question { margin: 15px 0; font-size: clamp(18px,4vw,22px); opacity: 0; transition: opacity 0.5s ease; }
-.question.show { opacity: 1; }
+.envelope-wrapper.open-flap .heart-seal,
+.envelope-wrapper.open-flap .envelope-sender {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 
-.buttons { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 50px; }
-button { font: inherit; border: 0; cursor: pointer; font-weight: 700; border-radius: 50px; padding: 10px 20px; font-size: 14px; }
-#yesBtn { color: #fff; background: linear-gradient(135deg,#ff65a7,#ff176d); }
-#noBtn { color: #351526; background: #fff; }
+.envelope-wrapper.fade-out {
+  opacity: 0;
+  transform: translateY(60px) scale(0.8);
+  pointer-events: none;
+}
 
-.reaction-bar { display: flex; justify-content: center; gap: 8px; margin-top: 12px; opacity: 0; transition: opacity 0.5s ease; }
-.reaction-bar.show { opacity: 1; }
-.react-btn { background: rgba(255,255,255,0.15); border: 0; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; }
+/* --- CARD / LETTER STYLES --- */
+.card{
+ position: relative;
+ z-index: 15;
+ width: min(680px, 100%);
+ padding: 28px 20px 22px;
+ text-align: center;
+ border: 1px solid rgba(255,255,255,.18);
+ border-radius: 28px;
+ background: linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));
+ backdrop-filter: blur(28px);
+ -webkit-backdrop-filter: blur(28px);
+ box-shadow: 0 20px 60px rgba(0,0,0,.65), inset 0 1px rgba(255,255,255,.22);
+ opacity: 0;
+ transform: translateY(80px) scale(0.85);
+ pointer-events: none;
+ transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+ will-change: transform, opacity;
+ display: none;
+}
 
-/* OVERLAY */
-.overlay { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 16px; background: rgba(5,0,10,.92); }
-.overlay.show { display: grid; }
-.success { width: min(450px,100%); padding: 24px 16px; text-align: center; border-radius: 20px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); }
-.success h2 { font-size: clamp(28px,6vw,40px); margin-bottom: 8px; color: #fff; }
-.success p { font-size: 14px; color: #ffe3ed; white-space: pre-line; }
+.card.unfold-show {
+ display: block;
+ opacity: 1;
+ transform: translateY(0) scale(1);
+ pointer-events: auto;
+}
 
-.custom-msg-box { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center; opacity: 0; transition: opacity 0.5s ease; }
-.custom-msg-box.show { opacity: 1; }
-.custom-msg-box textarea { width: 100%; height: 70px; padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.4); color: #fff; font-size: 13px; resize: none; outline: none; }
-.send-btn { background: #25D366; color: #fff; font-size: 13px; padding: 10px 20px; border-radius: 20px; border: 0; cursor: pointer; }
-.signature { margin-top: 12px; font-size: 11px; color: rgba(255,220,235,.5); opacity: 0; }
-.signature.show { opacity: 1; }
+.card:after{content:"";position:absolute;inset:0;border-radius:28px;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 30%,transparent 70%,rgba(255,70,150,.08))}
+.content{position:relative;z-index:2}
+.topline{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#ffb8d1;margin-bottom:12px}
+.orbit{width:96px;height:96px;margin:0 auto 15px;display:grid;place-items:center;position:relative;border-radius:50%;background:radial-gradient(circle,rgba(255,61,139,.23),transparent 68%);border:1px solid rgba(255,255,255,.14);box-shadow:0 0 45px rgba(255,38,125,.25);animation:float 4s ease-in-out infinite}
+.orbit:before,.orbit:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,150,195,.25)}
+.orbit:before{inset:6px;animation:spin 8s linear infinite}
+.orbit:after{inset:16px;border-style:dashed;animation:spin 12s linear infinite reverse}
+.heart{font-size:48px;filter:drop-shadow(0 0 16px rgba(255,50,130,.8));animation:beat 1.8s ease-in-out infinite}
+.badge{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border-radius:99px;border:1px solid rgba(255,180,205,.17);background:rgba(255,85,150,.06);font-size:10px;letter-spacing:1.4px;color:#ffc7da;text-transform:uppercase;font-weight:800}
+.dot{width:5px;height:5px;border-radius:50%;background:#ff6da7;box-shadow:0 0 8px #ff6da7}
+h1{font-size:clamp(36px,8.5vw,60px);line-height:1;letter-spacing:-1.5px;margin:14px 0 12px;background:linear-gradient(100deg,#fff,#ff9fc5,#fff);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+
+/* Typewriter CSS */
+.message{max-width:500px;margin:auto;color:#f9dce8;font-size:15px;line-height:1.65;min-height:90px;white-space:pre-line}
+.cursor{display:inline-block;width:2px;height:16px;background-color:#ff6da7;margin-left:2px;animation:blink .7s infinite}
+
+.question{margin:18px 0;font-size:clamp(20px,4.8vw,28px);line-height:1.3;opacity:0;transition:opacity 1s ease}
+.question.show{opacity:1}
+.question span{filter:drop-shadow(0 0 8px rgba(255,70,140,.65))}
+
+.buttons{position:relative;display:flex;justify-content:center;align-items:center;gap:12px;min-height:60px;width:100%;touch-action:none}
+button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weight:850;border-radius:999px;padding:12px 24px;font-size:15px;transition:transform .2s ease, box-shadow .2s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+#yesBtn{color:#fff;background:linear-gradient(135deg,#ff65a7,#ff176d);box-shadow:0 10px 28px rgba(255,23,109,.4),inset 0 1px rgba(255,255,255,.45);z-index:2}
+#yesBtn:active{transform:scale(.95)}
+#noBtn{color:#351526;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.24);position:relative;z-index:3;will-change:transform}
+
+/* --- REACTION BAR --- */
+.reaction-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.reaction-bar.show {
+  opacity: 1;
+}
+.react-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+  padding: 0;
+}
+.react-btn:hover {
+  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.25);
+}
+.react-btn:active {
+  transform: scale(0.9);
+}
+
+.float{position:fixed;bottom:-50px;z-index:1;pointer-events:none;opacity:0;animation:rise linear forwards;filter:drop-shadow(0 0 8px rgba(255,70,145,.45))}
+.overlay{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:16px;background:rgba(4,0,8,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.overlay.show{display:grid;animation:fade .5s ease}
+.success{width:min(500px,100%);padding:28px 20px 24px;text-align:center;border-radius:28px;border:1px solid rgba(255,255,255,.17);background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.045));box-shadow:0 25px 80px rgba(0,0,0,.65);animation:pop .7s cubic-bezier(.2,.8,.2,1)}
+.success .orbit{width:90px;height:90px;margin-bottom:15px}
+.success h2{font-size:clamp(36px,8.5vw,56px);line-height:1;margin-bottom:12px;background:linear-gradient(90deg,#fff,#ff9fc4,#fff);background-size:220% auto;-webkit-background-clip:text;color:transparent;animation:shine 3s linear infinite;min-height:56px}
+.success p{font-size:16px;line-height:1.6;color:#ffe3ed;min-height:50px;white-space:pre-line}
+.signature{margin-top:16px;font-size:11px;color:rgba(255,220,235,.5);opacity:0;transition:opacity 1s ease}
+.signature.show{opacity:1}
+
+.custom-msg-box{margin-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center;opacity:0;transition:opacity 1s ease}
+.custom-msg-box.show{opacity:1}
+.custom-msg-box textarea{width:100%;max-width:380px;height:80px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;font-family:inherit;font-size:14px;resize:none;outline:none}
+.custom-msg-box textarea::placeholder{color:rgba(255,255,255,.5)}
+.send-btn{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-size:14px;padding:10px 24px;border-radius:20px;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(37,211,102,.3)}
+.send-btn:active{transform:scale(.96)}
+
+@keyframes pulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes pop{from{opacity:0;transform:translateY(15px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(1)}45%{transform:scale(1.06)}60%{transform:scale(1)}}
+@keyframes float{50%{transform:translateY(-5px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shine{to{background-position:220% center}}
+@keyframes drift{to{transform:translate(40px,30px) scale(1.1)}}
+@keyframes rise{0%{transform:translate3d(0,0,0) rotate(0) scale(.7);opacity:0}12%{opacity:.7}100%{transform:translate3d(var(--drift),-115vh,0) rotate(300deg) scale(1.2);opacity:0}}
+
+@media(max-width:480px){
+ body{padding:8px}
+ .envelope-wrapper{width: 280px; height: 190px;}
+ .envelope .lid{border-left-width: 140px; border-right-width: 140px; border-top-width: 105px;}
+ .card{padding:22px 14px 18px;border-radius:24px}
+ .orbit{width:80px;height:80px;margin-bottom:12px}
+ .heart{font-size:40px}
+ h1{font-size:34px}
+ .message{font-size:14px;line-height:1.55}
+ .question{font-size:19px;margin:14px 0}
+ button{padding:11px 20px;font-size:14px}
+ .success{padding:22px 14px 18px}
+}
 </style>
 </head>
 <body>
+<div class="aurora"></div><div class="glow g1"></div><div class="glow g2"></div>
 
-<!-- GENERATOR -->
+<!-- STEP 1: LINK GENERATOR -->
 <div class="generator-screen" id="generatorScreen">
   <h2>Create Love Letter Link ✨</h2>
   <p>Enter details & customize your message</p>
@@ -140,16 +372,17 @@ button { font: inherit; border: 0; cursor: pointer; font-weight: 700; border-rad
     <input type="text" id="toInput" placeholder="To: Recipient Name">
     <input type="text" id="fromInput" placeholder="From: Your Name">
     <input type="text" id="waInput" placeholder="WhatsApp Number">
-    <textarea id="customMsgInput" placeholder="Write custom message or leave empty..."></textarea>
+    <textarea id="customMsgInput" placeholder="Write a message for her/him or leave empty for default message..."></textarea>
     <button class="gen-btn" id="genBtn" onclick="generateLink()">Generate Link 🔗</button>
   </div>
+  
   <div class="link-result" id="linkResult">
     <input type="text" id="generatedUrl" readonly>
     <button class="copy-btn" onclick="copyGeneratedLink()">Copy Link 📋</button>
   </div>
 </div>
 
-<!-- ENVELOPE CONTAINER -->
+<!-- STEP 2: ENVELOPE & LETTER CONTAINER -->
 <div class="envelope-container" id="envelopeContainer">
   <div class="envelope-wrapper" id="envelopeWrapper">
     <div class="envelope">
@@ -162,37 +395,42 @@ button { font: inherit; border: 0; cursor: pointer; font-weight: 700; border-rad
   <div class="click-hint" id="clickHint">Click to open your letter ✨</div>
 
   <main class="card" id="mainCard">
-    <div class="topline">A tiny secret for You</div>
-    <div class="heart">❤️</div>
-    <div class="badge">Something special</div>
+   <div class="content">
+    <div class="topline">A tiny secret for Youuuuuuu</div>
+    <div class="orbit"><div class="heart">❤️</div></div>
+    <div class="badge"><i class="dot"></i> Something special <i class="dot"></i></div>
     <h1 id="greetingTitle">Hey Special Someone</h1>
     <p class="message"><span id="typedText"></span><span class="cursor" id="cursor"></span></p>
-    <h2 class="question" id="questionText">Will you be mine forever? 💍❤️</h2>
+    <h2 class="question" id="questionText">Will you be mine forever? <span>💍❤️</span></h2>
     
     <div class="buttons">
-      <button id="yesBtn">YES! ❤️</button>
-      <button id="noBtn">Not today 😌</button>
+     <button id="yesBtn">YES! ❤️</button>
+     <button id="noBtn">Not today 😌</button>
     </div>
 
     <div class="reaction-bar" id="reactionBar">
       <button class="react-btn" onclick="sendReaction('🥰')">🥰</button>
       <button class="react-btn" onclick="sendReaction('💖')">💖</button>
       <button class="react-btn" onclick="sendReaction('💍')">💍</button>
+      <button class="react-btn" onclick="sendReaction('✨')">✨</button>
+      <button class="react-btn" onclick="sendReaction('💋')">💋</button>
     </div>
+   </div>
   </main>
 </div>
 
-<!-- SUCCESS OVERLAY -->
-<section id="successOverlay" class="overlay">
+<!-- STEP 3: SUCCESS OVERLAY -->
+<section id="successOverlay" class="overlay" aria-hidden="true">
  <div class="success">
-  <div class="heart">💖</div>
-  <h2>I Knew It! ❤️</h2>
-  <p>Our Forever Begins Today 🥰\nI love you today tomorrow and forever ♾️✨</p>
+  <div class="orbit"><div class="heart">💖</div></div>
+  <h2 id="successHeading"><span id="typedHeading"></span><span class="cursor" id="cursorH"></span></h2>
+  <p><span id="typedSubtext"></span><span class="cursor" id="cursorP" style="display:none"></span></p>
 
   <div class="custom-msg-box" id="msgBox">
     <textarea id="userMessage" placeholder="Want to say something to me? 💭"></textarea>
     <button class="send-btn" id="sendMsgBtn">Send on WhatsApp 💬</button>
   </div>
+  
   <div class="signature" id="signatureText">Yours always 🫶</div>
  </div>
 </section>
@@ -225,6 +463,8 @@ if (paramTo && paramWa) {
   greetingTitle.textContent = `Hey ${userName}`;
   envelopeSender.textContent = `Sent by ${senderName}`;
   envelopeContainer.classList.add("show");
+} else {
+  generatorScreen.style.display = "block";
 }
 
 async function generateLink() {
@@ -235,121 +475,60 @@ async function generateLink() {
   const rawMsg = document.getElementById("customMsgInput").value.trim();
   const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
 
-  if (!userKey || !toVal || !waVal) {
-    alert("Key, To Name, and WhatsApp number are required!");
+  if (!userKey) {
+    alert("Please enter a Secret Access Key!");
+    return;
+  }
+
+  if (!toVal || !waVal) {
+    alert("Please fill 'To' name and WhatsApp number!");
     return;
   }
 
   const genBtn = document.getElementById("genBtn");
   genBtn.disabled = true;
-  genBtn.textContent = "Verifying... ⏳";
+  genBtn.textContent = "Verifying Key... ⏳";
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey) + "&t=" + new Date().getTime();
+  // Google Script URL with Expiry Checking
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey);
 
   try {
-    const response = await fetch(scriptUrl, { redirect: "follow" });
+    const response = await fetch(scriptUrl);
     const data = await response.json();
+
     if (!data.result) {
-      alert("Invalid or Expired Secret Access Key!");
+      alert("Invalid, Inactive, or Expired Secret Access Key!");
       genBtn.disabled = false;
       genBtn.textContent = "Generate Link 🔗";
       return;
     }
   } catch (err) {
-    alert("Key verify failed. Generating link directly...");
+    alert("Error checking key validity. Please try again!");
+    genBtn.disabled = false;
+    genBtn.textContent = "Generate Link 🔗";
+    return;
   }
 
   genBtn.disabled = false;
   genBtn.textContent = "Generate Link 🔗";
 
   let baseUrl = window.location.href.split('?')[0];
-  document.getElementById("generatedUrl").value = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
+  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
+
+  document.getElementById("generatedUrl").value = shareableUrl;
   document.getElementById("linkResult").style.display = "flex";
 }
 
 function copyGeneratedLink() {
   const linkInput = document.getElementById("generatedUrl");
+  linkInput.focus();
   linkInput.select();
-  document.execCommand('copy');
-  alert("Link copied! ❤️");
-}
+  linkInput.setSelectionRange(0, 99999);
 
-let textIndex = 0;
-let isOpened = false;
-
-function typeWriter() {
-  if (textIndex < textToType.length) {
-    document.getElementById("typedText").textContent += textToType.charAt(textIndex);
-    textIndex++;
-    setTimeout(typeWriter, 40);
-  } else {
-    document.getElementById("cursor").style.display = "none";
-    document.getElementById("questionText").classList.add("show");
-    document.getElementById("reactionBar").classList.add("show");
-  }
-}
-
-document.getElementById("envelopeWrapper").addEventListener("click", function() {
-  if (isOpened) return;
-  isOpened = true;
-
-  this.classList.add("open-flap");
-  document.getElementById("clickHint").style.opacity = "0";
-
-  setTimeout(() => {
-    this.classList.add("fade-out");
-    setTimeout(() => {
-      this.style.display = "none";
-      const mainCard = document.getElementById("mainCard");
-      mainCard.style.display = "block";
-      setTimeout(() => mainCard.classList.add("unfold-show"), 50);
-      setTimeout(typeWriter, 500);
-    }, 400);
-  }, 500);
-});
-
-const noBtn = document.getElementById("noBtn");
-let dodgeCount = 0;
-const dodgeWords = ["Nope 😂", "Too slow 😜", "Try again 😆", "No chance 🤭"];
-
-function dodge(e) {
-  if(e) e.preventDefault();
-  dodgeCount++;
-  const x = (Math.random() * 160) - 80;
-  const y = (Math.random() * 80) - 40;
-  noBtn.style.transform = `translate(${x}px, ${y}px)`;
-  noBtn.textContent = dodgeWords[dodgeCount % dodgeWords.length];
-}
-
-noBtn.addEventListener("touchstart", dodge, {passive: false});
-noBtn.addEventListener("mouseover", dodge);
-
-function sendNotification(extraText = "") {
-  const msgContent = extraText ? `${userName}: "${extraText}" ❤️` : `${userName} clicked YES! ❤️`;
-  fetch("https://formspree.io/f/xeaoqgeq", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msgContent })
-  });
-}
-
-document.getElementById("yesBtn").addEventListener("click", () => {
-  document.getElementById("successOverlay").classList.add("show");
-  confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-  sendNotification();
-  setTimeout(() => {
-    document.getElementById("msgBox").classList.add("show");
-    document.getElementById("signatureText").classList.add("show");
-  }, 400);
-});
-
-document.getElementById("sendMsgBtn").addEventListener("click", () => {
-  const replyText = document.getElementById("userMessage").value.trim();
-  const finalMessage = "I said YES! ❤️ " + replyText;
-  sendNotification(finalMessage);
-  window.location.href = `https://api.whatsapp.com/send?phone=${myWhatsAppNumber}&text=${encodeURIComponent(finalMessage)}`;
-});
-</script>
-</body>
-</html>
-
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(linkInput.value);
+    } else {
+      document.execCommand('copy');
+    }
+    alert("Link 
