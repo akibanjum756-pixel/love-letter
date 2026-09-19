@@ -487,36 +487,16 @@ async function generateLink() {
 
   const genBtn = document.getElementById("genBtn");
   genBtn.disabled = true;
-  genBtn.textContent = "Verifying Key... ⏳";
-
-  // Google Script URL with Expiry Checking
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey);
-
-  try {
-    const response = await fetch(scriptUrl);
-    const data = await response.json();
-
-    if (!data.result) {
-      alert("Invalid, Inactive, or Expired Secret Access Key!");
-      genBtn.disabled = false;
-      genBtn.textContent = "Generate Link 🔗";
-      return;
-    }
-  } catch (err) {
-    alert("Error checking key validity. Please try again!");
-    genBtn.disabled = false;
-    genBtn.textContent = "Generate Link 🔗";
-    return;
-  }
-
-  genBtn.disabled = false;
-  genBtn.textContent = "Generate Link 🔗";
+  genBtn.textContent = "Generating Link... ⏳";
 
   let baseUrl = window.location.href.split('?')[0];
   const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
 
   document.getElementById("generatedUrl").value = shareableUrl;
   document.getElementById("linkResult").style.display = "flex";
+  
+  genBtn.disabled = false;
+  genBtn.textContent = "Generate Link 🔗";
 }
 
 function copyGeneratedLink() {
@@ -531,4 +511,11 @@ function copyGeneratedLink() {
     } else {
       document.execCommand('copy');
     }
-    alert("Link 
+    alert("Link copied to clipboard! ❤️");
+  } catch(err) {
+    alert("Failed to copy link!");
+  }
+}
+</script>
+</body>
+</html>
