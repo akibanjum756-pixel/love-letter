@@ -282,7 +282,7 @@ h1{font-size:clamp(36px,8.5vw,60px);line-height:1;letter-spacing:-1.5px;margin:1
 button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weight:850;border-radius:999px;padding:12px 24px;font-size:15px;transition:transform .2s ease, box-shadow .2s ease;user-select:none;-webkit-tap-highlight-color:transparent}
 #yesBtn{color:#fff;background:linear-gradient(135deg,#ff65a7,#ff176d);box-shadow:0 10px 28px rgba(255,23,109,.4),inset 0 1px rgba(255,255,255,.45);z-index:2}
 #yesBtn:active{transform:scale(.95)}
-#noBtn{color:#351526;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.24);position:relative;z-index:3;will-change:transform}
+#noBtn{color:#351526;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.24);position:relative;z-index:3;will-change:transform;transition: left 0.3s ease, top 0.3s ease;}
 
 /* --- REACTION BAR --- */
 .reaction-bar {
@@ -405,7 +405,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
     
     <div class="buttons">
      <button id="yesBtn">YES! ❤️</button>
-     <button id="noBtn">Not today 😌</button>
+     <button id="noBtn">No</button>
     </div>
 
     <div class="reaction-bar" id="reactionBar">
@@ -593,9 +593,9 @@ yesBtn.addEventListener("click", () => {
   typeSuccess();
 });
 
-/* NO BUTTON EVADE WITH DYNAMIC TEXT */
+/* NO BUTTON EVADE WITH SCREEN BOUNDARY SAFEGUARD */
 const noPhrases = [
-  "Not today 😌",
+  "No",
   "Are you sure? 🥺",
   "Think again! 💭",
   "Really? 💔",
@@ -607,11 +607,22 @@ const noPhrases = [
 let phraseIndex = 0;
 
 noBtn.addEventListener("mouseover", moveNoBtn);
-noBtn.addEventListener("touchstart", moveNoBtn);
+noBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  moveNoBtn();
+});
 
 function moveNoBtn() {
-  const x = Math.random() * (window.innerWidth - 120) - (window.innerWidth / 2 - 60);
-  const y = Math.random() * (window.innerHeight - 60) - (window.innerHeight / 2 - 30);
+  const btnWidth = noBtn.offsetWidth || 100;
+  const btnHeight = noBtn.offsetHeight || 40;
+  
+  // Safe area limits inside viewport
+  const maxTranslateX = (window.innerWidth / 2) - btnWidth;
+  const maxTranslateY = (window.innerHeight / 2) - btnHeight;
+
+  let x = (Math.random() * 2 - 1) * maxTranslateX;
+  let y = (Math.random() * 2 - 1) * maxTranslateY;
+
   noBtn.style.transform = `translate(${x}px, ${y}px)`;
   
   phraseIndex = (phraseIndex + 1) % noPhrases.length;
