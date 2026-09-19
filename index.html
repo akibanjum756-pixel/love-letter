@@ -86,7 +86,7 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 #yesBtn{color:#fff;background:linear-gradient(135deg,#ff65a7,#ff176d);box-shadow:0 10px 28px rgba(255,23,109,.4),inset 0 1px rgba(255,255,255,.45);z-index:2}
 #yesBtn:active{transform:scale(.95)}
 
-#noBtn{color:#351526;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.24);position:relative;z-index:999;will-change:transform, left, top;transition: left 0.3s ease, top 0.3s ease;}
+#noBtn{color:#351526;background:linear-gradient(135deg,#fff,#ffe2ee);box-shadow:0 8px 24px rgba(255,80,150,.28);position:relative;z-index:999;will-change:transform,left,top;transition:left .24s cubic-bezier(.2,.8,.2,1),top .24s cubic-bezier(.2,.8,.2,1),transform .18s ease,box-shadow .18s ease;}
 
 .reaction-bar { display: flex; justify-content: center; gap: 8px; margin-top: 15px; opacity: 0; transition: opacity 1s ease; flex-wrap: wrap; }
 .react-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 38px; height: 38px; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: transform 0.2s ease, background 0.2s ease; padding: 0; }
@@ -108,6 +108,33 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 .send-btn{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-size:14px;padding:10px 24px;border-radius:20px;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(37,211,102,.3)}
 .send-btn:active{transform:scale(.96)}
 
+.success.celebration-active {
+  animation: celebrationPop .85s cubic-bezier(.16,1,.3,1) both;
+  border-color: rgba(255,145,195,.55);
+  box-shadow: 0 0 35px rgba(255,45,130,.25), 0 25px 90px rgba(0,0,0,.7);
+}
+.success.celebration-active .orbit { animation: celebrationPulse 1.1s ease-in-out infinite; }
+.celebration-heart {
+  position: fixed; left: 0; top: 0; z-index: 10000; pointer-events: none;
+  user-select: none; will-change: transform, opacity;
+  filter: drop-shadow(0 0 12px rgba(255,65,145,.7));
+  animation: heartBurst var(--duration, 1.8s) cubic-bezier(.12,.72,.25,1) forwards;
+}
+@keyframes celebrationPop {
+  0% { opacity: 0; transform: scale(.72) translateY(24px); }
+  65% { opacity: 1; transform: scale(1.035) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes celebrationPulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 35px rgba(255,38,125,.25); }
+  50% { transform: scale(1.12); box-shadow: 0 0 65px rgba(255,38,125,.55); }
+}
+@keyframes heartBurst {
+  0% { opacity: 0; transform: translate(0,0) scale(.25) rotate(0deg); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(var(--scale)) rotate(var(--rotate)); }
+}
+
 @keyframes blurredEmojiFloat {
   0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; filter: blur(10px); }
   20% { opacity: 0.85; filter: blur(2px); }
@@ -128,6 +155,22 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shine{to{background-position:220% center}}
 @keyframes drift{to{transform:translate(40px,30px) scale(1.1)}}
+
+.magic-cursor{
+ position:fixed;left:0;top:0;z-index:10020;pointer-events:none;font-size:20px;
+ transform:translate(-50%,-50%);filter:drop-shadow(0 0 8px rgba(255,105,180,.9));
+ animation:cursorSpark .75s ease-out forwards;
+}
+@keyframes cursorSpark{0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-95px) scale(.15) rotate(120deg)}}
+.rose-petal{position:fixed;top:-35px;z-index:2;pointer-events:none;opacity:.85;
+ animation:petalFall linear forwards;filter:drop-shadow(0 0 5px rgba(255,100,160,.35))}
+@keyframes petalFall{0%{transform:translate3d(0,-5vh,0) rotate(0deg);opacity:0}
+ 10%{opacity:.9}50%{transform:translate3d(var(--sway),50vh,0) rotate(240deg)}
+ 100%{transform:translate3d(calc(var(--sway) * -1),110vh,0) rotate(560deg);opacity:0}}
+#typedText,#typedSubtext{white-space:pre-line;text-shadow:0 0 18px rgba(255,145,190,.25)}
+.emotional-glow{animation:emotionalGlow 2.6s ease-in-out infinite alternate}
+@keyframes emotionalGlow{from{text-shadow:0 0 5px rgba(255,120,180,.15)}to{text-shadow:0 0 18px rgba(255,120,180,.8),0 0 32px rgba(255,40,120,.25)}}
+@media(prefers-reduced-motion:reduce){.rose-petal,.magic-cursor,.emotional-glow{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 </style>
 </head>
 <body>
@@ -207,10 +250,8 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
 </section>
 
 <script>
-// APPS SCRIPT WEB APP URL 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEgnuX98hWXyzpPuyBCpMT_qLDql5Z9uDA3uQxGBAjRuhF3Uk8eKUHwAluMZw2F64/exec";
 
-// Device ID generate বা localStorage theke ana
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_unique_id");
   if (!deviceId) {
@@ -360,21 +401,75 @@ const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const successOverlay = document.getElementById("successOverlay");
 
+let celebrationStarted = false;
+
+function launchHeartExplosion() {
+  const emojis = ["💖", "❤️", "💕", "💗", "💘", "💝", "✨"];
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight * 0.48;
+
+  for (let i = 0; i < 58; i++) {
+    const heart = document.createElement("span");
+    heart.className = "celebration-heart";
+    heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    heart.style.left = centerX + "px";
+    heart.style.top = centerY + "px";
+    const angle = (Math.PI * 2 * i / 58) + Math.random() * 0.22;
+    const distance = 100 + Math.random() * Math.min(window.innerWidth * 0.42, 260);
+    heart.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+    heart.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+    heart.style.setProperty("--scale", (0.65 + Math.random() * 1.15).toFixed(2));
+    heart.style.setProperty("--rotate", (Math.random() * 100 - 50) + "deg");
+    heart.style.setProperty("--duration", (1.35 + Math.random() * 1.1) + "s");
+    heart.style.fontSize = (18 + Math.random() * 28) + "px";
+    document.body.appendChild(heart);
+    heart.addEventListener("animationend", () => heart.remove(), { once: true });
+  }
+
+  for (let i = 0; i < 18; i++) {
+    setTimeout(() => {
+      const heart = document.createElement("span");
+      heart.className = "celebration-heart";
+      heart.textContent = Math.random() > 0.35 ? "💗" : "✨";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.top = window.innerHeight + 20 + "px";
+      heart.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
+      heart.style.setProperty("--dy", (-window.innerHeight * (0.55 + Math.random() * 0.4)) + "px");
+      heart.style.setProperty("--scale", (0.7 + Math.random() * 1.1).toFixed(2));
+      heart.style.setProperty("--rotate", (Math.random() * 90 - 45) + "deg");
+      heart.style.setProperty("--duration", (2.2 + Math.random() * 1.2) + "s");
+      heart.style.fontSize = (18 + Math.random() * 24) + "px";
+      document.body.appendChild(heart);
+      heart.addEventListener("animationend", () => heart.remove(), { once: true });
+    }, i * 75);
+  }
+}
+
 yesBtn.addEventListener("click", () => {
-  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  if (celebrationStarted) return;
+  celebrationStarted = true;
+  yesBtn.disabled = true;
+
+  confetti({ particleCount: 160, spread: 100, startVelocity: 42, origin: { y: 0.58 } });
+  setTimeout(() => confetti({ particleCount: 90, spread: 130, startVelocity: 30, origin: { y: 0.65 } }), 350);
   successOverlay.classList.add("show");
-  
+  successOverlay.querySelector(".success").classList.add("celebration-active");
+  launchHeartExplosion();
+
   const typedSubtext = document.getElementById("typedSubtext");
   const cursorP = document.getElementById("cursorP");
   const msgBox = document.getElementById("msgBox");
   const signatureText = document.getElementById("signatureText");
-
   const successMessage = "Our Forever Begins Today 🥰\nI love you today tomorrow and forever ♾️✨";
   let j = 0;
-  
+  typedSubtext.textContent = "";
+  cursorP.style.display = "inline-block";
+
   function typeSuccess() {
     if (j < successMessage.length) {
-      typedSubtext.textContent += successMessage.charAt(j); j++; setTimeout(typeSuccess, 40);
+      typedSubtext.textContent += successMessage.charAt(j);
+      j++;
+      setTimeout(typeSuccess, 40);
     } else {
       cursorP.style.display = "none";
       msgBox.classList.add("show");
@@ -384,36 +479,57 @@ yesBtn.addEventListener("click", () => {
   typeSuccess();
 });
 
-const noPhrases = ["No", "Are you sure? 🥺", "Think again! 💭", "Really? 💔", "Reconsider? 🌸", "Give it a try! ✨", "Wrong button! 😜", "Nice try! 🙈"];
+const noPhrases = [
+  "No 🙈", "Are you sure? 🥺", "Think again! 💭", "Oops, too slow! 😂",
+  "Catch me if you can! 🏃‍♀️", "Wrong button, bestie! 😜", "My answer is... RUN! 💨",
+  "Nice try! 🤭", "Still chasing me? 😂", "One more chance? 💖",
+  "Nope-a-rooni! 🍝", "You can't catch love! 💘", "Mission impossible! 🕵️",
+  "Hehe, missed me! 😝", "Okay okay... just kidding! 🥹"
+];
+
 let phraseIndex = 0;
+let noMoveCount = 0;
 
 noBtn.addEventListener("mouseover", moveNoBtn);
-noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoBtn(); });
+noBtn.addEventListener("focus", moveNoBtn);
+noBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  moveNoBtn();
+}, { passive: false });
 
 function moveNoBtn() {
-  if (noBtn.style.position !== 'absolute' && noBtn.style.position !== 'fixed') {
-    noBtn.style.position = 'absolute';
-    noBtn.style.transform = 'none';
-  }
-  
-  // Card-er vitorer safe area te button-ta move korbe jate screen er baire na jay
-  const cardRect = mainCard.getBoundingClientRect();
-  const btnWidth = noBtn.offsetWidth;
-  const btnHeight = noBtn.offsetHeight;
-  
-  const minX = 20;
-  const maxX = cardRect.width - btnWidth - 20;
-  const minY = 120;
-  const maxY = cardRect.height - btnHeight - 20;
-
-  const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-  const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-
-  noBtn.style.left = randomX + "px";
-  noBtn.style.top = randomY + "px";
-  
+  noMoveCount++;
   phraseIndex = (phraseIndex + 1) % noPhrases.length;
   noBtn.textContent = noPhrases[phraseIndex];
+
+  noBtn.style.position = "fixed";
+  noBtn.style.transform = `rotate(${Math.random() * 18 - 9}deg) scale(${0.94 + Math.random() * 0.12})`;
+  noBtn.style.zIndex = "9999";
+
+  const margin = 14;
+  const vw = document.documentElement.clientWidth;
+  const vh = document.documentElement.clientHeight;
+  const rect = noBtn.getBoundingClientRect();
+  const w = Math.min(rect.width || noBtn.offsetWidth, vw - margin * 2);
+  const h = Math.min(rect.height || noBtn.offsetHeight, vh - margin * 2);
+
+  const maxX = Math.max(margin, vw - w - margin);
+  const maxY = Math.max(margin, vh - h - margin);
+  const x = margin + Math.random() * (maxX - margin);
+  const y = margin + Math.random() * (maxY - margin);
+
+  noBtn.style.left = `${Math.round(Math.max(margin, Math.min(x, maxX)))}px`;
+  noBtn.style.top = `${Math.round(Math.max(margin, Math.min(y, maxY)))}px`;
+
+  if (noMoveCount === 4) {
+    noBtn.textContent = "You really want to click me? 😂";
+  } else if (noMoveCount === 8) {
+    noBtn.textContent = "The YES button is blushing 👉👈";
+  } else if (noMoveCount === 12) {
+    noBtn.textContent = "Okay, you win... just kidding! 🏃";
+  }
+
+  noBtn.style.boxShadow = `0 10px 28px rgba(255, ${45 + Math.floor(Math.random() * 50)}, 145, .45)`;
 }
 
 function startBackgroundParticles() {
@@ -460,6 +576,40 @@ function sendReaction(emoji) {
     }, i * 50);
   }
 }
+
+(function(){
+ let last=0;
+ document.addEventListener("pointermove",e=>{
+   if(e.pointerType==="touch") return;
+   const now=performance.now(); if(now-last<42) return; last=now;
+   const spark=document.createElement("span"); spark.className="magic-cursor";
+   spark.textContent=["✨","💗","🌸","💕"][Math.floor(Math.random()*4)];
+   spark.style.left=e.clientX+"px"; spark.style.top=e.clientY+"px";
+   document.body.appendChild(spark); setTimeout(()=>spark.remove(),800);
+ },{passive:true});
+})();
+
+(function(){
+ const petals=["🌹","🌸","🌺","💮"];
+ function makePetal(){
+   const petal=document.createElement("span"); petal.className="rose-petal";
+   petal.textContent=petals[Math.floor(Math.random()*petals.length)];
+   petal.style.left=(Math.random()*100)+"vw";
+   petal.style.fontSize=(13+Math.random()*15)+"px";
+   petal.style.setProperty("--sway",((Math.random()*160)-80)+"px");
+   const duration=7+Math.random()*8; petal.style.animationDuration=duration+"s";
+   document.body.appendChild(petal); setTimeout(()=>petal.remove(),duration*1000+300);
+ }
+ for(let n=0;n<9;n++) setTimeout(makePetal,n*420);
+ setInterval(makePetal,850);
+})();
+
+window.addEventListener("DOMContentLoaded",()=>{
+ const typed=document.getElementById("typedText");
+ const typedSub=document.getElementById("typedSubtext");
+ if(typed) typed.classList.add("emotional-glow");
+ if(typedSub) typedSub.classList.add("emotional-glow");
+});
 </script>
 </body>
 </html>
