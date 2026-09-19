@@ -444,6 +444,9 @@ let textToType = defaultText;
 
 const generatorScreen = document.getElementById("generatorScreen");
 const envelopeContainer = document.getElementById("envelopeContainer");
+const envelopeWrapper = document.getElementById("envelopeWrapper");
+const clickHint = document.getElementById("clickHint");
+const mainCard = document.getElementById("mainCard");
 const greetingTitle = document.getElementById("greetingTitle");
 const envelopeSender = document.getElementById("envelopeSender");
 
@@ -515,6 +518,91 @@ function copyGeneratedLink() {
   } catch(err) {
     alert("Failed to copy link!");
   }
+}
+
+/* ENVELOPE OPEN LOGIC */
+let envelopeOpened = false;
+envelopeWrapper.addEventListener("click", () => {
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+
+  envelopeWrapper.classList.add("open-flap");
+  clickHint.style.opacity = "0";
+
+  setTimeout(() => {
+    envelopeWrapper.classList.add("fade-out");
+    setTimeout(() => {
+      envelopeWrapper.style.display = "none";
+      clickHint.style.display = "none";
+      mainCard.classList.add("unfold-show");
+      startTypewriter();
+    }, 600);
+  }, 800);
+});
+
+/* TYPEWRITER ANIMATION */
+function startTypewriter() {
+  const typedTextEl = document.getElementById("typedText");
+  const cursor = document.getElementById("cursor");
+  const questionText = document.getElementById("questionText");
+  const reactionBar = document.getElementById("reactionBar");
+  
+  let i = 0;
+  function type() {
+    if (i < textToType.length) {
+      typedTextEl.textContent += textToType.charAt(i);
+      i++;
+      setTimeout(type, 40);
+    } else {
+      cursor.style.display = "none";
+      questionText.classList.add("show");
+      reactionBar.classList.add("show");
+    }
+  }
+  type();
+}
+
+/* BUTTON HANDLERS */
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const successOverlay = document.getElementById("successOverlay");
+
+yesBtn.addEventListener("click", () => {
+  confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  successOverlay.classList.add("show");
+  
+  const typedHeading = document.getElementById("typedHeading");
+  const typedSubtext = document.getElementById("typedSubtext");
+  const msgBox = document.getElementById("msgBox");
+  const signatureText = document.getElementById("signatureText");
+
+  typedHeading.textContent = "Yay! 🎉❤️";
+  typedSubtext.textContent = `You made ${senderName}'s day so special!`;
+  msgBox.classList.add("show");
+  signatureText.classList.add("show");
+});
+
+/* NO BUTTON EVADE */
+noBtn.addEventListener("mouseover", moveNoBtn);
+noBtn.addEventListener("touchstart", moveNoBtn);
+
+function moveNoBtn() {
+  const x = Math.random() * (window.innerWidth - 120) - (window.innerWidth / 2 - 60);
+  const y = Math.random() * (window.innerHeight - 60) - (window.innerHeight / 2 - 30);
+  noBtn.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+/* WHATSAPP MESSAGE */
+document.getElementById("sendMsgBtn").addEventListener("click", () => {
+  const userMsg = document.getElementById("userMessage").value.trim();
+  const text = encodeURIComponent(`Hey ${senderName}! I opened your secret letter! ❤️\n\nMy Message: ${userMsg}`);
+  window.open(`https://wa.me/${myWhatsAppNumber}?text=${text}`, '_blank');
+});
+
+function sendReaction(emoji) {
+  confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+  const text = encodeURIComponent(`Reacted ${emoji} to your secret letter!`);
+  window.open(`https://wa.me/${myWhatsAppNumber}?text=${text}`, '_blank');
 }
 </script>
 </body>
