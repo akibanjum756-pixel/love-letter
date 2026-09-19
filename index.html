@@ -616,7 +616,13 @@ function startBackgroundParticles() {
 
 document.getElementById("sendMsgBtn").addEventListener("click", () => {
   const userMsg = document.getElementById("userMessage").value.trim();
-  const text = encodeURIComponent(`Hey ${senderName}! I opened your secret letter! ❤️\n\nMy Message: ${userMsg}`);
+  
+  let messageText = `I said YES! ❤️`;
+  if (userMsg) {
+    messageText += `\n\nMy Message: ${userMsg}`;
+  }
+  
+  const text = encodeURIComponent(messageText);
   window.open(`https://wa.me/${myWhatsAppNumber}?text=${text}`, '_blank');
 });
 
