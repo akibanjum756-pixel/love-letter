@@ -14,7 +14,6 @@ body{
  min-height:100svh;display:grid;place-items:center;overflow:hidden;padding:12px;color:#fff;
  background:#0a0312;
 }
-/* Hardware acceleration for smooth animation */
 .card, .envelope-wrapper, .generator-screen {
   will-change: transform, opacity;
   transform: translateZ(0);
@@ -237,7 +236,7 @@ async function generateLink() {
   const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
 
   if (!userKey || !toVal || !waVal) {
-    alert("Key, To Name, and WhatsApp number are required!");
+    alert("Please enter Secret Key, To Name, and WhatsApp Number!");
     return;
   }
 
@@ -248,16 +247,23 @@ async function generateLink() {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey);
 
   try {
-    const response = await fetch(scriptUrl);
+    // Fixed Redirect Handling for Apps Script
+    const response = await fetch(scriptUrl, {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    
     const data = await response.json();
+
     if (!data.result) {
-      alert("Invalid or Expired Secret Access Key!");
+      alert("Invalid, Inactive or Expired Key!");
       genBtn.disabled = false;
       genBtn.textContent = "Generate Link 🔗";
       return;
     }
   } catch (err) {
-    alert("Error checking key!");
+    console.error(err);
+    alert("Error verifying key! Make sure the Apps Script deployment access is set to 'Anyone'.");
     genBtn.disabled = false;
     genBtn.textContent = "Generate Link 🔗";
     return;
@@ -312,7 +318,6 @@ document.getElementById("envelopeWrapper").addEventListener("click", function() 
   }, 500);
 });
 
-/* Simple Dodge Logic for Mobile */
 const noBtn = document.getElementById("noBtn");
 let dodgeCount = 0;
 const dodgeWords = ["Nope 😂", "Too slow 😜", "Try again 😆", "No chance 🤭"];
@@ -356,5 +361,4 @@ document.getElementById("sendMsgBtn").addEventListener("click", () => {
 });
 </script>
 </body>
- </html>
-
+</html>
