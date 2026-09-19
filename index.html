@@ -368,11 +368,12 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
   <h2>Create Love Letter Link ✨</h2>
   <p>Enter details & customize your message</p>
   <div class="input-box">
+    <input type="text" id="keyInput" placeholder="Enter Secret Access Key 🔑">
     <input type="text" id="toInput" placeholder="To: Recipient Name">
     <input type="text" id="fromInput" placeholder="From: Your Name">
     <input type="text" id="waInput" placeholder="WhatsApp Number">
     <textarea id="customMsgInput" placeholder="Write a message for her/him or leave empty for default message..."></textarea>
-    <button class="gen-btn" onclick="generateLink()">Generate Link 🔗</button>
+    <button class="gen-btn" id="genBtn" onclick="generateLink()">Generate Link 🔗</button>
   </div>
   
   <div class="link-result" id="linkResult">
@@ -466,24 +467,52 @@ if (paramTo && paramWa) {
   generatorScreen.style.display = "block";
 }
 
-function generateLink() {
+async function generateLink() {
+  const userKey = document.getElementById("keyInput").value.trim();
   const toVal = encodeURIComponent(document.getElementById("toInput").value.trim());
   const fromVal = encodeURIComponent(document.getElementById("fromInput").value.trim());
   const waVal = encodeURIComponent(document.getElementById("waInput").value.trim());
-  
   const rawMsg = document.getElementById("customMsgInput").value.trim();
   const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
+
+  if (!userKey) {
+    alert("Please enter a Secret Access Key!");
+    return;
+  }
 
   if (!toVal || !waVal) {
     alert("Please fill 'To' name and WhatsApp number!");
     return;
   }
 
-  let baseUrl = window.location.href.split('?')[0];
-  if (window.location.protocol === 'file:') {
-    alert("Notice: Direct file open kora. Web-e upload korle exact link paben.");
+  const genBtn = document.getElementById("genBtn");
+  genBtn.disabled = true;
+  genBtn.textContent = "Verifying Key... ⏳";
+
+  // Google Script URL with Expiry Checking
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey);
+
+  try {
+    const response = await fetch(scriptUrl);
+    const data = await response.json();
+
+    if (!data.result) {
+      alert("Invalid, Inactive, or Expired Secret Access Key!");
+      genBtn.disabled = false;
+      genBtn.textContent = "Generate Link 🔗";
+      return;
+    }
+  } catch (err) {
+    alert("Error checking key validity. Please try again!");
+    genBtn.disabled = false;
+    genBtn.textContent = "Generate Link 🔗";
+    return;
   }
 
+  genBtn.disabled = false;
+  genBtn.textContent = "Generate Link 🔗";
+
+  let baseUrl = window.location.href.split('?')[0];
   const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
 
   document.getElementById("generatedUrl").value = shareableUrl;
@@ -502,231 +531,4 @@ function copyGeneratedLink() {
     } else {
       document.execCommand('copy');
     }
-    alert("Link copied! Send this link to your recipient ❤️");
-  } catch (err) {
-    document.execCommand('copy');
-    alert("Link copied! Send this link to your recipient ❤️");
-  }
-}
-
-const typedTextElement = document.getElementById("typedText");
-const cursorElement = document.getElementById("cursor");
-const questionText = document.getElementById("questionText");
-const envelopeWrapper = document.getElementById("envelopeWrapper");
-const clickHint = document.getElementById("clickHint");
-const mainCard = document.getElementById("mainCard");
-const reactionBar = document.getElementById("reactionBar");
-
-let textIndex = 0;
-let isOpened = false;
-
-function typeWriter() {
-  if (textIndex < textToType.length) {
-    typedTextElement.textContent += textToType.charAt(textIndex);
-    textIndex++;
-    setTimeout(typeWriter, 45);
-  } else {
-    cursorElement.style.display = "none";
-    questionText.classList.add("show");
-    reactionBar.classList.add("show");
-  }
-}
-
-envelopeWrapper.addEventListener("click", function() {
-  if (isOpened) return;
-  isOpened = true;
-
-  envelopeWrapper.classList.add("open-flap");
-  clickHint.style.opacity = "0";
-
-  setTimeout(() => {
-    envelopeWrapper.classList.add("fade-out");
-    clickHint.style.display = "none";
-    
-    setTimeout(() => {
-      envelopeWrapper.style.display = "none";
-      mainCard.style.display = "block";
-      void mainCard.offsetWidth; 
-      mainCard.classList.add("unfold-show");
-      setTimeout(typeWriter, 700);
-    }, 400);
-
-  }, 600);
-});
-
-function sendReaction(emojiSymbol) {
-  for (let i = 0; i < 5; i++) {
-    const h = document.createElement("div");
-    h.className = "float";
-    h.textContent = emojiSymbol;
-    h.style.left = (Math.random() * 80 + 10) + "vw";
-    h.style.bottom = "20px";
-    h.style.fontSize = (20 + Math.random() * 15) + "px";
-    h.style.setProperty("--drift", (Math.random() * 100 - 50) + "px");
-    h.style.animationDuration = (2 + Math.random() * 1.5) + "s";
-    document.body.appendChild(h);
-    setTimeout(() => h.remove(), 3500);
-  }
-}
-
-const successHeadingText = "I Knew It! ❤️";
-const successSubtext = "Our Forever Begins Today 🥰\nI love you today tomorrow and forever ♾️✨";
-
-const typedHeading = document.getElementById("typedHeading");
-const cursorH = document.getElementById("cursorH");
-const typedSubtext = document.getElementById("typedSubtext");
-const cursorP = document.getElementById("cursorP");
-const msgBox = document.getElementById("msgBox");
-const signatureText = document.getElementById("signatureText");
-
-function typeSuccessContent() {
-  let hIndex = 0;
-  let pIndex = 0;
-
-  function typeHeading() {
-    if (hIndex < successHeadingText.length) {
-      typedHeading.textContent += successHeadingText.charAt(hIndex);
-      hIndex++;
-      setTimeout(typeHeading, 60);
-    } else {
-      cursorH.style.display = "none";
-      cursorP.style.display = "inline-block";
-      setTimeout(typeSubtext, 200);
-    }
-  }
-
-  function typeSubtext() {
-    if (pIndex < successSubtext.length) {
-      typedSubtext.textContent += successSubtext.charAt(pIndex);
-      pIndex++;
-      setTimeout(typeSubtext, 40);
-    } else {
-      cursorP.style.display = "none";
-      msgBox.classList.add("show");
-      signatureText.classList.add("show");
-    }
-  }
-
-  typeHeading();
-}
-
-const symbols=["❤️","💖","💕","💗","✨","💓","🌸"];
-const noBtn=document.getElementById("noBtn");
-const yesBtn=document.getElementById("yesBtn");
-const overlay=document.getElementById("successOverlay");
-const sendMsgBtn=document.getElementById("sendMsgBtn");
-const userMessage=document.getElementById("userMessage");
-let lastMove=0, dodgeCount=0;
-const dodgeWords=[
- "Not today 😌","Nope 😂","Too slow 😜","Catch me! 🏃","Not today 😏",
- "Try again 😂","Missed me! 🙈","Almost! 😆","Can't catch me 😎",
- "No chance 🤭","Hehe nope 💕","I'm shy 🙈","Nice try 😜",
- "Run run! 🏃💨","Oops! 😂","Maybe later 😶","Think again 💭",
- "You missed! 😆","Neverrr 😝","Catch me if you can 😎"
-];
-
-function createHeart(burst=false){
- const h=document.createElement("div");
- h.className="float";
- h.textContent=burst?"💖":symbols[Math.floor(Math.random()*symbols.length)];
- h.style.left=Math.random()*100+"vw";
- h.style.fontSize=(10+Math.random()*(burst?20:14))+"px";
- h.style.setProperty("--drift",(Math.random()*140-70)+"px");
- h.style.animationDuration=(burst?2.2+Math.random()*2.5:5+Math.random()*4)+"s";
- h.style.animationDelay=(Math.random()*(burst?.3:3))+"s";
- document.body.appendChild(h);
- setTimeout(()=>h.remove(),9000);
-}
-for(let i=0;i<15;i++)createHeart();
-setInterval(()=>createHeart(),1000);
-
-function triggerHeartConfetti() {
-  const duration = 3 * 1000;
-  const animationEnd = Date.now() + duration;
-
-  const interval = setInterval(function() {
-    const timeLeft = animationEnd - Date.now();
-    if (timeLeft <= 0) {
-      return clearInterval(interval);
-    }
-    const particleCount = 40 * (timeLeft / duration);
-    confetti({
-      particleCount: particleCount,
-      startVelocity: 30,
-      spread: 360,
-      ticks: 60,
-      origin: { x: Math.random(), y: Math.random() - 0.2 },
-      colors: ['#ff176d', '#ff65a7', '#7c3cff', '#ffffff'],
-      shapes: ['circle'],
-      scalar: 1.2
-    });
-  }, 250);
-}
-
-function dodge(e){
- if(e) e.preventDefault();
- const now=Date.now();
- if(now-lastMove<120)return;
- lastMove=now;
- dodgeCount++;
-
- const maxMovementX=Math.min(window.innerWidth*0.35,110);
- const maxMovementY=Math.min(window.innerHeight*0.12,70);
- 
- const x=(Math.random()*2-1)*maxMovementX;
- const y=(Math.random()*2-1)*maxMovementY;
- const rotate=Math.random()*20-10;
- const scale=0.9+Math.random()*.15;
-
- noBtn.style.transform=`translate3d(${x}px,${y}px,0) rotate(${rotate}deg) scale(${scale})`;
- noBtn.textContent=dodgeWords[dodgeCount%dodgeWords.length];
-
- if(dodgeCount%5===0){
-   noBtn.animate([
-     {transform:`translate3d(${x}px,${y}px,0) rotate(${rotate}deg) scale(${scale})`},
-     {transform:`translate3d(${x-6}px,${y+3}px,0) rotate(${rotate-4}deg) scale(${scale})`},
-     {transform:`translate3d(${x+6}px,${y-3}px,0) rotate(${rotate+4}deg) scale(${scale})`},
-     {transform:`translate3d(${x}px,${y}px,0) rotate(${rotate}deg) scale(${scale})`}
-   ],{duration:240,iterations:2});
- }
-}
-
-noBtn.addEventListener("mouseenter",dodge);
-noBtn.addEventListener("touchstart",dodge,{passive:false});
-noBtn.addEventListener("click",dodge);
-
-function sendNotification(extraText="") {
-  const msgContent = extraText ? `${userName} sent a message: "${extraText}" ❤️` : `${userName} clicked YES! ❤️`;
-  fetch("https://formspree.io/f/xeaoqgeq", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msgContent })
-  });
-}
-
-function celebrate(){
- overlay.classList.add("show");
- overlay.setAttribute("aria-hidden","false");
- for(let i=0;i<60;i++)createHeart(true);
- triggerHeartConfetti();
- sendNotification();
- setTimeout(typeSuccessContent, 300);
-}
-yesBtn.addEventListener("click",celebrate);
-
-sendMsgBtn.addEventListener("click", () => {
-  const replyText = userMessage.value.trim();
-  let finalMessage = "I said YES! ❤️";
-  if (replyText !== "") {
-    finalMessage += " " + replyText;
-  }
-  sendNotification(finalMessage);
-  const encodedMessage = encodeURIComponent(finalMessage);
-  const whatsappUrl = `https://api.whatsapp.com/send?phone=${myWhatsAppNumber}&text=${encodedMessage}`;
-  setTimeout(() => {
-    window.location.href = whatsappUrl;
-  }, 300);
-});
-</script>
-</body>
-</html>
+    alert("Link 
