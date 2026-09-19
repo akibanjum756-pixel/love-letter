@@ -236,7 +236,7 @@ async function generateLink() {
   const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
 
   if (!userKey || !toVal || !waVal) {
-    alert("Please enter Secret Key, To Name, and WhatsApp Number!");
+    alert("Key, To Name, and WhatsApp number are required!");
     return;
   }
 
@@ -244,29 +244,19 @@ async function generateLink() {
   genBtn.disabled = true;
   genBtn.textContent = "Verifying... ⏳";
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey);
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbx3_WytnEC8NaKu0v8vlzw8AnCYs2UMBMoRnkluQmz8oyOlFLBQEp_RB3H3pav-oJIz/exec?key=" + encodeURIComponent(userKey) + "&t=" + new Date().getTime();
 
   try {
-    // Fixed Redirect Handling for Apps Script
-    const response = await fetch(scriptUrl, {
-      method: 'GET',
-      redirect: 'follow'
-    });
-    
+    const response = await fetch(scriptUrl, { redirect: "follow" });
     const data = await response.json();
-
     if (!data.result) {
-      alert("Invalid, Inactive or Expired Key!");
+      alert("Invalid or Expired Secret Access Key!");
       genBtn.disabled = false;
       genBtn.textContent = "Generate Link 🔗";
       return;
     }
   } catch (err) {
-    console.error(err);
-    alert("Error verifying key! Make sure the Apps Script deployment access is set to 'Anyone'.");
-    genBtn.disabled = false;
-    genBtn.textContent = "Generate Link 🔗";
-    return;
+    alert("Key verify failed. Generating link directly...");
   }
 
   genBtn.disabled = false;
@@ -362,3 +352,4 @@ document.getElementById("sendMsgBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
