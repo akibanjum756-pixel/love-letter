@@ -43,10 +43,16 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;ba
 .input-box input, .input-box textarea { width: 100%; padding: 12px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.4); color: #fff; font-size: 14px; text-align: center; outline: none; font-family: inherit; }
 .input-box textarea { height: 90px; resize: none; text-align: left; border-radius: 16px; line-height: 1.4; }
 .input-box textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
-.input-box input:focus, .input-box textarea:focus { border-color: #ff6da7; }
+.input-box input:focus, .input-box textarea:focus, .wa-container select:focus { border-color: #ff6da7; }
 .gen-btn { background: linear-gradient(135deg,#ff65a7,#ff176d); color: #fff; font-size: 15px; font-weight: 700; padding: 12px 30px; border-radius: 20px; border: 0; cursor: pointer; box-shadow: 0 6px 20px rgba(255,23,109,.4); margin-top: 5px; }
 .link-result { display: none; margin-top: 15px; flex-direction: column; gap: 8px; }
 .copy-btn { background: #25D366; color: #fff; padding: 10px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; }
+
+/* WA Country Code Input Style */
+.wa-container { display: flex; gap: 8px; width: 100%; }
+.wa-container select { width: 42%; padding: 12px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.6); color: #fff; font-size: 13px; outline: none; font-family: inherit; cursor: pointer; }
+.wa-container select option { background: #11061a; color: #fff; }
+.wa-container input { width: 58%; text-align: left; }
 
 .envelope-container { position: relative; width: min(680px, 100%); min-height: 420px; display: none; flex-direction: column; align-items: center; justify-content: center; perspective: 1000px; opacity: 0; transition: opacity 0.8s ease; }
 .envelope-container.show { display: flex; opacity: 1; }
@@ -183,7 +189,43 @@ button{font:inherit;border:0;cursor:pointer;touch-action:manipulation;font-weigh
     <input type="text" id="keyInput" placeholder="Enter Secret Access Key 🔑">
     <input type="text" id="toInput" placeholder="To: Recipient Name">
     <input type="text" id="fromInput" placeholder="From: Your Name">
-    <input type="text" id="waInput" placeholder="WhatsApp Number">
+    
+    <div class="wa-container">
+      <select id="countryCode">
+        <option value="880">🇧🇩 Bangladesh (+880)</option>
+        <option value="91">🇮🇳 India (+91)</option>
+        <option value="1">🇺🇸 USA/Canada (+1)</option>
+        <option value="44">🇬🇧 UK (+44)</option>
+        <option value="971">🇦🇪 UAE (+971)</option>
+        <option value="966">🇸🇦 Saudi Arabia (+966)</option>
+        <option value="974">🇶🇦 Qatar (+974)</option>
+        <option value="965">🇰🇼 Kuwait (+965)</option>
+        <option value="968">🇴🇲 Oman (+968)</option>
+        <option value="973">🇧🇭 Bahrain (+973)</option>
+        <option value="60">🇲🇾 Malaysia (+60)</option>
+        <option value="65">🇸🇬 Singapore (+65)</option>
+        <option value="61">🇦🇺 Australia (+61)</option>
+        <option value="39">🇮🇹 Italy (+39)</option>
+        <option value="33">🇫🇷 France (+33)</option>
+        <option value="49">🇩🇪 Germany (+49)</option>
+        <option value="81">🇯🇵 Japan (+81)</option>
+        <option value="86">🇨🇳 China (+86)</option>
+        <option value="92">🇵🇰 Pakistan (+92)</option>
+        <option value="977">🇳🇵 Nepal (+977)</option>
+        <option value="94">🇱🇰 Sri Lanka (+94)</option>
+        <option value="62">🇮🇩 Indonesia (+62)</option>
+        <option value="63">🇵🇭 Philippines (+63)</option>
+        <option value="82">🇰🇷 South Korea (+82)</option>
+        <option value="55">🇧🇷 Brazil (+55)</option>
+        <option value="7">🇷🇺 Russia (+7)</option>
+        <option value="27">🇿🇦 South Africa (+27)</option>
+        <option value="234">🇳🇬 Nigeria (+234)</option>
+        <option value="20">🇪🇬 Egypt (+20)</option>
+        <option value="34">🇪🇸 Spain (+34)</option>
+      </select>
+      <input type="text" id="waInput" placeholder="Number (e.g. 1700000000)">
+    </div>
+
     <textarea id="customMsgInput" placeholder="Write a message or leave empty..."></textarea>
     <button class="gen-btn" id="genBtn" onclick="generateLink()">Generate Link 🔗</button>
   </div>
@@ -328,15 +370,23 @@ async function generateLink() {
 
   const toText = document.getElementById("toInput").value.trim();
   const fromText = document.getElementById("fromInput").value.trim();
-  const waText = document.getElementById("waInput").value.trim();
-  const rawMsg = document.getElementById("customMsgInput").value.trim();
+  
+  const codeSelect = document.getElementById("countryCode").value;
+  let rawWa = document.getElementById("waInput").value.trim().replace(/[^0-9]/g, '');
 
-  if (!toText || !waText) {
+  if (!toText || !rawWa) {
     alert("Please fill 'To' name and WhatsApp number!");
     genBtn.disabled = false;
     genBtn.textContent = "Generate Link 🔗";
     return;
   }
+
+  if (rawWa.startsWith("0")) {
+    rawWa = rawWa.substring(1);
+  }
+
+  const waText = codeSelect + rawWa;
+  const rawMsg = document.getElementById("customMsgInput").value.trim();
 
   const params = new URLSearchParams();
   params.set("to", toText);
@@ -356,7 +406,7 @@ async function generateLink() {
 
 function copyGeneratedLink() {
   const linkInput = document.getElementById("generatedUrl");
-  linkInput.focus(); linkInput.select(); linkInput.setSelectionRange(0, 9999);
+  linkInput.focus(); linkInput.select(); linkInput.setSelectionRange(0, 99999);
   try {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(linkInput.value);
