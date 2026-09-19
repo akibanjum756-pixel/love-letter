@@ -285,7 +285,7 @@ if (paramTo && paramWa) {
   userName = paramTo;
   if (paramFrom) senderName = paramFrom;
   myWhatsAppNumber = paramWa;
-  if (paramMsg) textToType = decodeURIComponent(paramMsg);
+  if (paramMsg) textToType = paramMsg;
 
   generatorScreen.style.display = "none";
   greetingTitle.textContent = `Hey ${userName}`;
@@ -326,21 +326,26 @@ async function generateLink() {
     return;
   }
 
-  const toVal = encodeURIComponent(document.getElementById("toInput").value.trim());
-  const fromVal = encodeURIComponent(document.getElementById("fromInput").value.trim());
-  const waVal = encodeURIComponent(document.getElementById("waInput").value.trim());
+  const toText = document.getElementById("toInput").value.trim();
+  const fromText = document.getElementById("fromInput").value.trim();
+  const waText = document.getElementById("waInput").value.trim();
   const rawMsg = document.getElementById("customMsgInput").value.trim();
-  
-  if (!toVal || !waVal) {
+
+  if (!toText || !waText) {
     alert("Please fill 'To' name and WhatsApp number!");
     genBtn.disabled = false;
     genBtn.textContent = "Generate Link 🔗";
     return;
   }
 
-  const msgVal = encodeURIComponent(rawMsg !== "" ? rawMsg : defaultText);
-  let baseUrl = window.location.href.split('?')[0];
-  const shareableUrl = `${baseUrl}?to=${toVal}&from=${fromVal}&wa=${waVal}&msg=${msgVal}`;
+  const params = new URLSearchParams();
+  params.set("to", toText);
+  if (fromText) params.set("from", fromText);
+  params.set("wa", waText);
+  if (rawMsg && rawMsg !== defaultText) params.set("msg", rawMsg);
+
+  const baseUrl = window.location.href.split("?")[0].split("#")[0];
+  const shareableUrl = `${baseUrl}?${params.toString()}`;
 
   document.getElementById("generatedUrl").value = shareableUrl;
   document.getElementById("linkResult").style.display = "flex";
@@ -351,7 +356,7 @@ async function generateLink() {
 
 function copyGeneratedLink() {
   const linkInput = document.getElementById("generatedUrl");
-  linkInput.focus(); linkInput.select(); linkInput.setSelectionRange(0, 99999);
+  linkInput.focus(); linkInput.select(); linkInput.setSelectionRange(0, 9999);
   try {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(linkInput.value);
@@ -480,11 +485,21 @@ yesBtn.addEventListener("click", () => {
 });
 
 const noPhrases = [
-  "No 🙈", "Are you sure? 🥺", "Think again! 💭", "Oops, too slow! 😂",
-  "Catch me if you can! 🏃‍♀️", "Wrong button, bestie! 😜", "My answer is... RUN! 💨",
-  "Nice try! 🤭", "Still chasing me? 😂", "One more chance? 💖",
-  "Nope-a-rooni! 🍝", "You can't catch love! 💘", "Mission impossible! 🕵️",
-  "Hehe, missed me! 😝", "Okay okay... just kidding! 🥹"
+  "No 🙈",
+  "Are you sure? 🥺",
+  "Think again! 💭",
+  "Oops, too slow! 😂",
+  "Catch me if you can! 🏃‍♀️",
+  "Wrong button, bestie! 😜",
+  "My answer is... RUN! 💨",
+  "Nice try! 🤭",
+  "Still chasing me? 😂",
+  "One more chance? 💖",
+  "Nope-a-rooni! 🍝",
+  "You can't catch love! 💘",
+  "Mission impossible! 🕵️",
+  "Hehe, missed me! 😝",
+  "Okay okay... just kidding! 🥹"
 ];
 
 let phraseIndex = 0;
